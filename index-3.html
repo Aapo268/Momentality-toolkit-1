@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#534AB7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Momentality">
+<title>Momentality</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px}
+
+/* LOCK */
+#lock{position:fixed;inset:0;background:#f5f5f0;z-index:9999;display:flex;align-items:center;justify-content:center}
+.lock-box{width:100%;max-width:320px;padding:32px 24px;text-align:center}
+.lock-title{font-size:22px;font-weight:500;margin-bottom:6px}
+.lock-sub{font-size:13px;color:#888;margin-bottom:28px}
+.lock-input{width:100%;padding:12px 16px;border:0.5px solid #ddd;border-radius:12px;font-size:16px;background:#fff;outline:none;text-align:center;letter-spacing:.1em}
+.lock-btn{width:100%;margin-top:12px;padding:13px;background:#534AB7;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:500;cursor:pointer}
+.lock-err{font-size:12px;color:#c0392b;margin-top:10px;min-height:18px}
+
+/* SCREENS */
+.screen{display:none;padding:16px;min-height:100vh;padding-bottom:80px}
+.screen.active{display:block}
+
+/* TYPOGRAPHY */
+h1{font-size:24px;font-weight:500;margin-bottom:4px;cursor:default;user-select:none}
+h2{font-size:18px;font-weight:500;margin-bottom:4px}
+.sub{font-size:13px;color:#666;margin-bottom:20px}
+.theory-box{background:#fff;border-left:3px solid #534AB7;border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:20px}
+.theory-box p{font-size:13px;color:#444;line-height:1.65}
+.theory-box p+p{margin-top:8px}
+
+/* HOME NAV */
+.sec-label{font-size:11px;font-weight:500;color:#999;text-transform:uppercase;letter-spacing:.06em;margin:18px 0 8px;display:flex;align-items:center;gap:10px}
+.nav-btn{width:100%;text-align:left;padding:14px 16px;margin-bottom:8px;background:#fff;border:0.5px solid #ddd;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:12px}
+.nav-icon{font-size:20px;width:28px;text-align:center;flex-shrink:0;color:#666}
+.nav-label{font-size:14px;font-weight:500;color:#1a1a1a;line-height:1.3}
+.nav-sub{font-size:12px;color:#888;margin-top:2px}
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:13px;color:#666;padding:0 0 14px}
+
+/* CARDS */
+.card{background:#fff;border:0.5px solid #ddd;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.card-admin-bar{background:#fff3f3;border-bottom:1px solid #fdd;padding:6px 12px;display:none;justify-content:flex-end}
+.admin-mode .card-admin-bar{display:flex}
+.del-card-btn{background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer}
+.card-header{padding:14px 16px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-name{font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:4px}
+.badge{font-size:11px;padding:2px 8px;border-radius:4px;display:inline-block}
+.b-purple{background:#EEEDFE;color:#3C3489}
+.b-teal{background:#E1F5EE;color:#085041}
+.b-amber{background:#FAEEDA;color:#633806}
+.b-coral{background:#FAECE7;color:#712B13}
+.b-blue{background:#E6F1FB;color:#0C447C}
+.chevron{font-size:16px;color:#aaa;transition:transform .2s;flex-shrink:0;margin-top:2px}
+.card-body{display:none;padding:4px 16px 16px;border-top:0.5px solid #eee}
+.card-body.open{display:block}
+.theory{font-size:13px;color:#555;line-height:1.65;margin-top:10px}
+.step{display:flex;gap:10px;margin-top:8px;align-items:flex-start}
+.step-num{min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;background:#f0f0ec;color:#666;flex-shrink:0;margin-top:1px}
+.step-letter{min-width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;background:#EEEDFE;color:#3C3489;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:#444;line-height:1.55}
+.ex-box{background:#f8f8f5;border-radius:8px;padding:10px 12px;margin-top:10px}
+.ex-label{font-size:11px;color:#999;font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.ex-text{font-size:12px;color:#555;line-height:1.55;font-style:italic}
+
+/* ADMIN */
+#admin-bar{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;padding:10px 16px;display:none;gap:8px;z-index:1000;flex-wrap:wrap;align-items:center}
+#admin-bar.visible{display:flex}
+.adm-btn{padding:8px 14px;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;color:#fff;white-space:nowrap}
+.admin-badge{font-size:10px;background:#534AB7;color:#fff;border-radius:4px;padding:2px 8px;font-weight:600;margin-left:8px;vertical-align:middle}
+.del-sec-btn{background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;display:none;align-items:center;gap:4px}
+.admin-mode .del-sec-btn{display:flex}
+.del-nav-btn{background:#e74c3c;color:#fff;border:none;border-radius:6px;width:26px;height:26px;display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.admin-mode .del-nav-btn{display:flex}
+.add-card-btn{width:100%;padding:14px;background:#534AB7;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:500;margin-bottom:16px}
+.modal label{font-size:12px;color:#666;display:block;margin-bottom:4px;margin-top:12px}
+.modal input,.modal textarea,.modal select{width:100%;padding:10px 12px;border:0.5px solid #ddd;border-radius:10px;font-size:14px;outline:none;font-family:inherit;box-sizing:border-box}
+.modal textarea{min-height:80px;resize:vertical}
+.modal-btns{display:flex;gap:8px;margin-top:20px}
+.modal-btns button{flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer}
+.btn-ok{background:#534AB7;color:#fff}
+.btn-cancel{background:#f0f0ec;color:#444}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-title">Momentality</div>
+    <div class="lock-sub">Syötä salasana jatkaaksesi</div>
+    <input class="lock-input" id="pw" type="password" placeholder="••••••" maxlength="20" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">Avaa</button>
+    <div class="lock-err" id="pw-err"></div>
+  </div>
+</div>
+
+<!-- ADMIN BAR -->
+<div id="admin-bar">
+  <span style="font-size:11px;color:#aaa">ADMIN</span>
+  <button class="adm-btn" style="background:#27ae60" onclick="openAddCard()"><i class="ti ti-plus"></i> Lisää kortti</button>
+  <button class="adm-btn" style="background:#534AB7" onclick="openAddCat()"><i class="ti ti-folder-plus"></i> Uusi kategoria</button>
+  <button class="adm-btn" style="background:#e74c3c;margin-left:auto" onclick="toggleAdmin()"><i class="ti ti-x"></i> Sulje admin</button>
+</div>
+
+<!-- ADD CARD MODAL -->
+<div class="overlay" id="add-card-modal">
+  <div class="modal">
+    <h3>Lisää kortti</h3>
+    <label>Nimi</label><input id="m-name" placeholder="Esim. WARP — riskin arviointi">
+    <label>Badge</label><input id="m-badge" placeholder="Esim. Ennen isoa päätöstä">
+    <label>Väri</label>
+    <select id="m-color">
+      <option value="b-teal">Vihreä</option>
+      <option value="b-purple">Violetti</option>
+      <option value="b-amber">Keltainen</option>
+      <option value="b-coral">Punainen</option>
+      <option value="b-blue">Sininen</option>
+    </select>
+    <label>Teoria</label><textarea id="m-theory" placeholder="Mitä tämä työkalu tekee?"></textarea>
+    <label>Esimerkki (valinnainen)</label><textarea id="m-example" placeholder="Konkreettinen esimerkki..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('add-card-modal')">Peruuta</button>
+      <button class="btn-ok" onclick="confirmAddCard()">Lisää</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CATEGORY MODAL -->
+<div class="overlay" id="add-cat-modal">
+  <div class="modal">
+    <h3>Uusi kategoria</h3>
+    <label>Kategorianimi</label><input id="cm-sec" placeholder="Esim. Talous & investointi">
+    <label>Nappulan otsikko</label><input id="cm-label" placeholder="Esim. Analysoin sijoituskohdetta">
+    <label>Nappulan kuvaus</label><input id="cm-sub" placeholder="Esim. Due diligence, Bayesian...">
+    <label>Näytön otsikko</label><input id="cm-title" placeholder="Esim. Sijoitusanalyysi">
+    <label>Näytön kuvaus</label><input id="cm-sub2" placeholder="Lyhyt kuvaus">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('add-cat-modal')">Peruuta</button>
+      <button class="btn-ok" onclick="confirmAddCat()">Luo</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+    <h1 id="home-title">Momentality</h1>
+    <span class="admin-badge" style="display:none" id="admin-badge-el">ADMIN</span>
+  </div>
+  <p class="sub">Mikä on tilanteesi nyt?</p>
+  <div class="theory-box">
+    <p><strong>Pääperiaate:</strong> Mitä toistuvasti valitset lyhyellä aikavälillä, johtaa pitkällä aikavälillä päinvastaiseen lopputulokseen. Terve keho? Herkkujen välttely, ruokavalio, urheilu.</p>
+    <p>Tuska tai mielihyvä päätöksestä on väliaikainen. Helpon mielihyvä on ohimenevä huippu, vaikean kipu lyhyt pisto. Mutta seuraukset ovat todellisia ja pysyviä.</p>
+    <p>Vaikea on fakta. Joko valitset vaikeammat päätökset nyt, tai vaikea valitsee sinut.</p>
+    <p><em>Hidasta hetki, ole läsnä, analysoi päätöksen vaikutusta.</em></p>
+  </div>
+  <div id="home-sections"></div>
+</div>
+
+<!-- DETAIL SCREEN -->
+<div id="detail" class="screen">
+  <button class="back-btn" onclick="goHome()"><i class="ti ti-arrow-left"></i> Takaisin</button>
+  <h2 id="detail-title"></h2>
+  <p class="sub" id="detail-sub"></p>
+  <div id="detail-cards"></div>
+  <button class="add-card-btn" id="add-card-btn-bottom" style="display:none" onclick="openAddCard()">
+    <i class="ti ti-plus"></i> Lisää uusi kortti
+  </button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const DEFAULT = {
+  sections:[
+    {id:"s1",label:"Rohkeus & toiminta",items:[
+      {id:"rohkeus",icon:"ti-flame",label:"Tarvitsen rohkeutta toimia",sub:"WARP, FICK, Katumus, Visualisaatio"},
+      {id:"itsekuri",icon:"ti-barbell",label:"Itsekuri",sub:"90pv taktiikat, identiteettiankkurit, standing orders, trigger, SMG"},
+      {id:"epamukavuus",icon:"ti-flame-off",label:"Epämukavuus",sub:"Ten turns, Embrace the suck, Pain is intel, Gratitude goggles"}
+    ]},
+    {id:"s2",label:"Päätöksenteko",items:[
+      {id:"taistelu",icon:"ti-sword",label:"Päivittäinen päätös (taistelu)",sub:"5 commands, 90pv analyysi, ympäristö"},
+      {id:"kampanja",icon:"ti-map",label:"Pitkän linjan suunta (kampanja)",sub:"Backcasting 10/5/1, Atomic domino, Kaizen chess"},
+      {id:"eturintama",icon:"ti-mountain",label:"Iso elämänmuutos (eturintama)",sub:"WARP + 44p evaluaatio, 1/2/3 avioerosuoja"},
+      {id:"analysointi",icon:"ti-scale",label:"Analysoin vaihtoehtoja",sub:"WADM, Expected value, Bayesian, Pedantic edgelording"}
+    ]},
+    {id:"s3",label:"Suunnittelu & maalit",items:[
+      {id:"maali",icon:"ti-target",label:"Asetan maalin tai suunnitelman",sub:"Backcasting, Atomic domino, SMG, 3A spiraali"},
+      {id:"jumissa",icon:"ti-player-pause",label:"Olen jumissa tai en liiku",sub:"Buridan, Detox, Identiteettivankila, Monkey first"}
+    ]},
+    {id:"s4",label:"Tutkiminen & due diligence",items:[
+      {id:"due",icon:"ti-zoom-question",label:"Tutkin tai epäilen jotain",sub:"Canary questions, Rumsfeld, Data drones, First principle"},
+      {id:"ongelma",icon:"ti-bulb",label:"Ratkaisen ongelmaa",sub:"SCIRE, Subconscious solving, Futurecasting, Metaphorical lensing"}
+    ]},
+    {id:"s5",label:"Reflektio & kasvu",items:[
+      {id:"menneisyys",icon:"ti-history",label:"Analysoin mennyttä virhettä",sub:"RADAR, Hansei, Big ugly funeral"},
+      {id:"tilanne",icon:"ti-report-analytics",label:"Tilannekatsaus — missä olen?",sub:"Sitrep, Command score, V/D-indeksi, Life as"}
+    ]},
+    {id:"s6",label:"Mieliala & perspektiivi",items:[
+      {id:"mieli",icon:"ti-mood-happy",label:"Mindset",sub:"Gratitude, Optimismi, Reframing, Life as movie/CEO/videopeli"}
+    ]}
+  ],
+  screens:{
+    rohkeus:{title:"Tarvitsen rohkeutta toimia",sub:"Työkalut ison askeleen ottamiseen pelosta huolimatta"},
+    itsekuri:{title:"Itsekuri",sub:"Tee mitä pitää tehdä, vaikka ei tunnu siltä"},
+    epamukavuus:{title:"Epämukavuus",sub:"Ota epämukavuus vastaan — se on kasvun hinta"},
+    taistelu:{title:"Päivittäinen päätös — taistelu",sub:"Rutiinipäätökset, joissa treason tai power ratkaistaan"},
+    kampanja:{title:"Pitkän linjan suunta — kampanja",sub:"Omistautuneet, pitkän tähtäimen operaatiot"},
+    eturintama:{title:"Iso elämänmuutos — eturintama",sub:"Suuret, elämää muuttavat päätökset"},
+    analysointi:{title:"Analysoin vaihtoehtoja",sub:"Strukturoi päätös ennen kuin valitset"},
+    maali:{title:"Maalin asettaminen",sub:"Visio → konkreettiset askeleet"},
+    jumissa:{title:"Olen jumissa",sub:"Käynnistä itsesi uudelleen — nyt"},
+    due:{title:"Tutkin tai epäilen",sub:"Due diligence ennen sitoutumista"},
+    ongelma:{title:"Ratkaisen ongelmaa",sub:"Löydä ratkaisu systemaattisesti"},
+    menneisyys:{title:"Analysoin mennyttä virhettä",sub:"Opi virheistä — älä jää niihin"},
+    tilanne:{title:"Tilannekatsaus — missä olen?",sub:"Objektiivinen kuva elämästäsi nyt"},
+    mieli:{title:"Mindset",sub:"Nosta asennetta tietoisesti — se on valinta"}
+  },
+  cards:{
+    rohkeus:[
+      {id:"warp",name:"WARP — riskin arviointi",badge:"Ennen isoa päätöstä",color:"b-coral",theory:"Ennen kuin teet ison päätöksen, vedä se WARP:in läpi.",steps:[{t:"L",l:"W",text:"Worst case — mikä on pahin mahdollinen lopputulos?"},{t:"L",l:"A",text:"Asymmetric risk — onko riski iso suhteessa hyötyyn?"},{t:"L",l:"P",text:"Probability rigging — millä teoilla parannan mahdollisuuksiani?"}],ex:{label:"Esimerkki",text:"Työ toisessa kaupungissa: W = vihaan työtä. A = osakeoptiot. P = tutkin yrityksen historian ennen päätöstä."}},
+      {id:"katumus",name:"Katumusharjoitus",badge:"Motivaatio toimia",color:"b-coral",theory:"Mene mielessäsi tulevaisuuteen — visuaalisoi itsesi vanhana kuolinvuoteellasi. Tule takaisin.",steps:[{t:"N",text:"Visuaalisoi itsesi kuolinvuoteella."},{t:"N",text:"Kysy: Jos en tee tätä, tuleeko tästä 'mitä jos' joka kummittelee loppuelämäni?"},{t:"N",text:"Tunne katumus nyt — älä vain ajattele sitä."}],ex:{label:"Esimerkki",text:"Halusin aloittaa yrityksen mutta pelkäsin. Suurin katumus ei olisi epäonnistuminen — vaan se, etten yrittänyt koskaan."}},
+      {id:"fick",name:"FICK — pelko on kutsu",badge:"Pelko → rohkeus",color:"b-coral",theory:"Fear Is Courage Knocking. Pelko osoittaa oikeaan suuntaan.",steps:[{t:"N",text:"Tunnista pelko nimeltä."},{t:"N",text:"Sano: Tämä pelko kertoo, että tässä on jotain tärkeää."},{t:"N",text:"Toimi pelosta huolimatta."}],ex:{label:"Esimerkki",text:"Halusin soittaa tärkeälle kontaktille mutta pelkäsin. Soitin — ja sain tapaamisen."}},
+      {id:"wwjd",name:"WWJD — mitä sankarini tekisi?",badge:"Roolimalli päätöksessä",color:"b-amber",theory:"Kysy: Mitä minun sankarini tekisi? Voi olla aito tai fiktiivinen henkilö.",steps:[],ex:{label:"Esimerkki",text:"Pitää pyytää isoa budjettia. WWJD: Elon Musk menisi sisään täydellä datalla ja pyytäisi kaksinkertaisen budjetin."}},
+      {id:"vis",name:"Visualisaatiostrategia",badge:"Mentaalinen harjoitus",color:"b-teal",theory:"Visuaalisoi suoritus täydellisesti ennen kuin teet sen. Tunne se kehossasi.",steps:[{t:"N",text:"Sulje silmät. Visuaalisoi suoritus menevän nappiin."},{t:"N",text:"Tunne varmuus kehossasi."},{t:"N",text:"Avaa silmät. Toimi juuri kuten visuaalisoit."}],ex:{label:"Esimerkki",text:"Työhaastattelu: visuaalisoi se menevän nappiin — tunne varmuus, sitten astu sisään."}},
+      {id:"pienet",name:"Pienet voitot — rohkeuden treeni",badge:"Päivittäinen harjoitus",color:"b-teal",theory:"Rohkeus on lihas. Treenaa sitä päivittäin pienissä tilanteissa.",steps:[],ex:{label:"Esimerkkejä",text:"Puhu tapaamisessa vaikka jännittää. Viittaa luokassa. Pyydä spottia salilla. Aloita keskustelu jonossa."}}
+    ],
+    itsekuri:[
+      {id:"90neg",name:"90 päivän negatiivinen visualisaatio",badge:"Seurausten näkeminen",color:"b-amber",theory:"Vedä jokainen pieni treason-päätös 90 päivän analyysiin.",steps:[{t:"N",text:"Kysy: Jos toistan tämän 90 päivää putkeen, mitkä ovat seuraukset?"},{t:"N",text:"Visuaalisoi lopputulos kehossasi — älä vain ajattele."}],ex:{label:"Esimerkki",text:"Donitsi joka aamu: rasvaprosentti nousee, energia huono, itsetunto laskee. 90 päivässä merkittävä muutos."}},
+      {id:"90rep",name:"90 päivän toistot",badge:"Sitoutuminen prosessiin",color:"b-teal",theory:"Omistaudu 90 toistoon ennen kuin kysyt mitä seuraavaksi.",steps:[],ex:{label:"Esimerkki",text:"Youtube-kanava: tee 90 videota ennen kuin päätät, onko se sinulle sopiva."}},
+      {id:"idank",name:"Identiteettiankkurit",badge:"Tee siitä identiteetti",color:"b-purple",theory:"Tee tietyistä päätöksistä identiteetti — päivittäiset haasteet helpottuvat.",steps:[],ex:{label:"Esimerkki",text:"Ruokavalio: Olen keto-ihminen. Ura: Olen yrittäjä. Identiteetti poistaa päivittäisen päätöksenteon."}},
+      {id:"sorders",name:"Standing orders — rikkomaton sääntö",badge:"Eliminoi pahe",color:"b-purple",theory:"Identifioi häiriötekijä joka sabotoi edistystäsi. Piirrä selkeä viiva.",steps:[{t:"N",text:"Tunnista pahe: Sosiaalinen media vie tunteja."},{t:"N",text:"Piirrä rikkomaton viiva: En avaa somea ennen kello 18."},{t:"N",text:"Muotoile niin, ettei vaadi tahdonvoimaa: poista sovellukset."}],ex:{label:"Esimerkkejä",text:"En käytä somea, ellei se hyödytä bisnestäni. En juo, ellei se ole juhliakseni."}},
+      {id:"trigger",name:"Trigger strategy",badge:"Sido toiminta triggeriin",color:"b-teal",theory:"Sido toiminta triggeriin. Kun triggeri tapahtuu, toiminta seuraa automaattisesti.",steps:[],ex:{label:"Esimerkkejä",text:"Kun herään, ennen puhelinta, teen 5 min meditaatiota. Kun puren kynsiä, teen 10 syvää hengitystä."}},
+      {id:"muistele",name:"Muistele menestystäsi",badge:"Motivaation ylläpito",color:"b-teal",theory:"Vertaa itseäsi vain menneisyyden itseesi, älä muihin.",steps:[],ex:{label:"Esimerkki",text:"Kaksi vuotta sitten et pystynyt juoksemaan kilometriä. Nyt juokset 10km. Muutos on dramaattinen."}},
+      {id:"ismg",name:"SMG — pienet voitot ensin",badge:"Aloita pienestä",color:"b-teal",theory:"Aseta menestymisen rima niin matalaksi, että voitat joka päivä.",steps:[],ex:{label:"Esimerkkejä",text:"10 000€ säästömaali: aloita 1€/päivä. Kirja: yksi kauhea virke päivässä riittää."}},
+      {id:"iymparisto",name:"Ympäristö palvelemaan sinua",badge:"Passiivinen itsekuri",color:"b-teal",theory:"Tee oikeasta valinnasta helpoin vaihtoehto muokkaamalla ympäristöä.",steps:[],ex:{label:"Esimerkkejä",text:"Haluat syödä terveellisesti? Älä pidä herkkuja jääkaapissa. Haluat lukea? Jätä kirja yöpöydälle."}}
+    ],
+    epamukavuus:[
+      {id:"tenturns",name:"Ten turns — 10 minuuttia",badge:"Aloita momentum",color:"b-teal",theory:"Omistaudu asiaan 10 minuuttia — jonka jälkeen saat lopettaa. Useimmiten et lopeta.",steps:[],ex:{label:"Esimerkki",text:"Ei haluta mennä salille: Teen vain 10 minuuttia. Useimmiten treeni jatkuu normaalisti."}},
+      {id:"embrace",name:"Embrace the suck",badge:"Epämukavuuden vastaanotto",color:"b-amber",theory:"Väliaikainen epämukavuus on maksu erinomaisesta elämästä. In the suck = kasvat.",steps:[{t:"N",text:"Pain is intel — kipu opettaa ja laajentaa mukavuusaluettasi."},{t:"N",text:"Reframe stress — näe stressi hyödyllisenä haasteena."},{t:"N",text:"Embrace it — epämukavuus = kasvu."}],ex:{label:"Esimerkki",text:"Tämä juoksumatto on perseestä, mutten lopeta. Juuri nyt laajennan mukavuusaluettani."}},
+      {id:"painintel",name:"Pain is intel — kipu on dataa",badge:"Muuta kipu tiedoksi",color:"b-coral",theory:"Jokainen epämukavuuden hetki on informaatiota kasvunvarasta.",steps:[{t:"N",text:"Tunnista kipu — sosiaalinen, fyysinen vai henkinen?"},{t:"N",text:"Kysy: Mitä tämä kertoo? Missä olen heikko?"},{t:"N",text:"Toimi datan mukaan."}],ex:{label:"Esimerkki",text:"Ääni vapisi myyntipuhelussa. Sen sijaan että häpesin: tee 10 myyntipuhelua viikossa."}},
+      {id:"gratgogg",name:"Gratitude goggles — vaihda linssi",badge:"Näe tilanne eri tavalla",color:"b-teal",theory:"Vaikka tilanne on raskas, etsi aktiivisesti mistä olet kiitollinen.",steps:[{t:"N",text:"Tunnista vaikea hetki."},{t:"N",text:"Kysy: Mistä voin tässä olla kiitollinen?"},{t:"N",text:"Kirjoita 3 asiaa."}],ex:{label:"Esimerkki",text:"Raskas työpäivä: 1. Minulla on työ. 2. Opin jotain uutta. 3. Kotona lämmin asunto."}}
+    ],
+    taistelu:[
+      {id:"5cmd",name:"5 momentality commands",badge:"Luokittele päätös",color:"b-purple",theory:"",steps:[{t:"N",text:"Neutral flow — perusasiat. Ei vaadi energiaa."},{t:"N",text:"Power decision — vaikean päätöksen teko, kun mieluummin tekisit muuta."},{t:"N",text:"Power flow — vaikeasta on tullut rutiini."},{t:"N",text:"Treason decision — tuntuu hyvältä nyt, maksaa myöhemmin."},{t:"N",text:"Treason flow — helppoista on tullut rutiini."}],ex:null},
+      {id:"90ana",name:"90 päivän analyysi",badge:"Päätöksen testi",color:"b-amber",theory:"Jos toistan tämän 90 päivää: Paremmalta +1. Huonommalta -1.",steps:[],ex:{label:"Esimerkki",text:"Aamuinen 30min lenkki: +1. Netflix 3h illassa joka päivä: -1."}},
+      {id:"ymp",name:"Ympäristö palvelemaan sinua",badge:"Passiivinen itsekuri",color:"b-teal",theory:"Tee oikeasta valinnasta helpoin vaihtoehto.",steps:[],ex:{label:"Esimerkki",text:"Terveellinen syöminen: älä pidä herkkuja jääkaapissa."}}
+    ],
+    kampanja:[
+      {id:"backcast",name:"Backcasting 10/5/1",badge:"Visio → viikot",color:"b-teal",theory:"Selvitä piste Z (unelma), piste A (nyt) ja seuraava askel B.",steps:[{t:"N",text:"10 vuoden unelmalopputulos — ole spesifi."},{t:"N",text:"5 vuoden etappi — mitä saavutettu puolivälissä?"},{t:"N",text:"1 vuoden maali — mitä teet tänä vuonna?"},{t:"N",text:"Viikoittaiset tavoitteet — yksi spesifi asia per viikko."}],ex:{label:"Esimerkki",text:"10v: Kirja myy miljoona. 5v: Yksi kirja julkaistu. 1v: Käsikirjoitus valmis."}},
+      {id:"kdomino",name:"Atomic domino — kampanjassa",badge:"Tärkein ensin",color:"b-teal",theory:"Löydä yksi asia, jonka tekemällä ensin kaikki muu helpottuu.",steps:[{t:"N",text:"Backcasta maali."},{t:"N",text:"Listaa kaikki tehtävät."},{t:"N",text:"Kysy: Mikä yksi asia tekee kaikesta muusta helppoa?"},{t:"N",text:"Unohda kaikki muu, kunnes domino on hoidettu."}],ex:{label:"Esimerkki",text:"Yritys: logo, sivusto, bisnesidea... Atomic domino: validoi idea oikealla asiakkaalla ensin."}},
+      {id:"kaizen",name:"Kaizen chess",badge:"Prosessi ennen tapahtumaa",color:"b-purple",theory:"Obsessoi prosessista, ei tapahtumasta. Net positive joka päivä.",steps:[{t:"N",text:"Kuningas — yleinen hyvinvointi."},{t:"N",text:"Kuningatar — vapaus: kyky valita."},{t:"N",text:"Piispa — spirituaalisuus."},{t:"N",text:"Ritari — tarkoitus, muiden auttaminen."},{t:"N",text:"Torni — suhteet."},{t:"N",text:"Sotilas — riskisi: kirjoita, aloita, julkaise."}],ex:null}
+    ],
+    eturintama:[
+      {id:"ewarp",name:"WARP + 44 pisteen evaluaatio",badge:"Iso päätös",color:"b-coral",theory:"Pistä eturintamapäätös Appendix A:n 44 pisteen evaluaation läpi.",steps:[],ex:null},
+      {id:"avio",name:"1/2/3 avioerosuoja",badge:"Suhteen due diligence",color:"b-coral",theory:"Ennen isoon suhteeseen sitoutumista, tee due diligence.",steps:[{t:"N",text:"Kysy tärkeät kysymykset: lapset, ura, arvot, raha."},{t:"N",text:"Vietä kaksi päivää parisi kanssa 'helvetissä'."},{t:"N",text:"Tapailkaa 3 vuotta ennen naimisiin menemistä."}],ex:null}
+    ],
+    analysointi:[
+      {id:"wadm",name:"WADM — matemaattinen valinta",badge:"Paras työkalu valintoihin",color:"b-purple",theory:"Matematiikka poistaa emotionaalisen häiriön.",steps:[{t:"N",text:"Listaa vaihtoehdot."},{t:"N",text:"Listaa kriteerit (palkka, etätyö, kasvu...)."},{t:"N",text:"Anna painoarvo 1–10 jokaiselle kriteerille."},{t:"N",text:"Pisteytä vaihtoehdot per kriteeri."},{t:"N",text:"Kerro painokertoimella, laske yhteen. Valitse isompi."}],ex:{label:"Esimerkki",text:"Arizona vs Utah: kriteerit palkka (9), perhe (8). Arizona 225p. Utah 227p. Utah voittaa."}},
+      {id:"ev",name:"Expected value",badge:"Riskillisten valintojen arviointi",color:"b-purple",theory:"EV = (Outcome A × P%) + (Outcome B × P%) + …",steps:[{t:"N",text:"Listaa mahdolliset lopputulokset."},{t:"N",text:"Arvioi todennäköisyydet."},{t:"N",text:"Anna arvo jokaiselle lopputulokselle."},{t:"N",text:"Laske EV."}],ex:{label:"Esimerkki",text:"Perustan yrityksen: 5% × 10M = 500K, 10% × 250K = 25K, 40% × -100K = -40K. EV = 477 500."}},
+      {id:"asym",name:"Is this asymmetrical?",badge:"Riski-hyöty suhde",color:"b-purple",theory:"Onko mahdollinen hyöty paljon suurempi kuin haitta?",steps:[],ex:{label:"Hyvä asymmetria",text:"Verkostoituminen: 30 min — voi johtaa elämää muuttavaan mahdollisuuteen."}},
+      {id:"bay",name:"Bayesian thinking",badge:"Uusi tieto muuttaa kantasi",color:"b-blue",theory:"Päivitä uskomuksesi uuden tiedon pohjalta.",steps:[{t:"N",text:"Pohjatieto — mikä on todennäköisyys ennen uutta tietoa?"},{t:"N",text:"Uusi todiste — miten muovaa pohjatietoa?"},{t:"N",text:"Päivitä varmuus."}],ex:{label:"Esimerkki",text:"90% varma Ricky on menestynyt. Uusi todiste: töissä Hesessä. Uusi varmuus: 90% varma, että valehtelee."}},
+      {id:"pizza",name:"600e pizza test",badge:"Ennen ostosta",color:"b-amber",theory:"Vedä hankinta kahden kysymyksen läpi.",steps:[{t:"N",text:"Kuinka monta kertaa käytän tätä oikeasti?"},{t:"N",text:"Mitä omistaminen maksaa — aika, huolto, tila?"}],ex:{label:"Esimerkki",text:"600€ espressokone: 1x/vk = 11,5€/käyttökerta vs 3€ kahvilassa."}},
+      {id:"pedant",name:"Pedantic edgelording",badge:"Kriittinen peilaaja",color:"b-coral",theory:"Käytä ärsyttävintä kaveriasi oletuksiisi ennen kuin maailma tekee niin.",steps:[{t:"N",text:"Mikä on cringein vika suunnitelmassani?"},{t:"N",text:"Mitä Reddit sanoisi tästä?"},{t:"N",text:"Mitä yliarvioin itsestäni?"},{t:"N",text:"Mitä isoin vihaajani sanoisi?"}],ex:{label:"Esimerkki — taco-rekka",text:"Kuinka paljon pitää myydä saadaksesi edes 2000e takaisin kuussa?"}}
+    ],
+    maali:[
+      {id:"mback",name:"Backcasting — maalin asetus",badge:"Piste Z → piste B",color:"b-teal",theory:"Valitse intohimoinen maali, sitten työskentele taaksepäin.",steps:[{t:"N",text:"Spesifi ja mitattava — Menetä 10kg on parempi kuin ole terveempi."},{t:"N",text:"Rehellisyys — haluatko oikeasti tätä?"},{t:"N",text:"Kutistaminen — jos ei mahdu viikkoon, liian iso."},{t:"N",text:"Act, Assess, Adjust."}],ex:null},
+      {id:"mdomino",name:"Atomic domino",badge:"Tärkein ensin",color:"b-teal",theory:"Löydä yksi asia, jonka tekemällä ensin kaikki muu helpottuu.",steps:[{t:"N",text:"Backcasta maali."},{t:"N",text:"Listaa kaikki tehtävät."},{t:"N",text:"Kysy: Mikä yksi asia tekee kaikesta muusta helppoa?"},{t:"N",text:"Unohda kaikki muu, kunnes domino on hoidettu."}],ex:{label:"Esimerkki",text:"Yritys: Atomic domino = validoi idea oikealla asiakkaalla ensin."}},
+      {id:"tark",name:"Tarkoitus — pistä itsesi raiteille",badge:"Löydä miksi",color:"b-purple",theory:"Lopeta odottaminen. Lähde etsimään tarkoitusta aktiivisesti.",steps:[{t:"N",text:"Kysy: Mikä ongelma ärsyttää niin paljon, että haluaisin ratkaista sen?"},{t:"N",text:"Kysy: Mikä aktiviteetti saa unohtamaan ajan kulun?"}],ex:null},
+      {id:"msmg",name:"SMG — pienet voitot ensin",badge:"Aloita pienestä",color:"b-teal",theory:"Aseta rima niin matalaksi, että voitat joka päivä.",steps:[],ex:{label:"Esimerkkejä",text:"10 000€ säästömaali: aloita 1€/päivä. Kirja: yksi virke päivässä."}},
+      {id:"m3a",name:"3A kasvuspiraali",badge:"Jatkuva parantaminen",color:"b-teal",theory:"3A pitää raiteilla kun muutos ei tunnu miltään.",steps:[{t:"L",l:"A",text:"Act — valitse yksi muuttuja ja muokkaa."},{t:"L",l:"A",text:"Assess — toimiko? Mitä opin?"},{t:"L",l:"A",text:"Adjust — muokkaa datan pohjalta. Toista."}],ex:null}
+    ],
+    jumissa:[
+      {id:"buri",name:"Buridan butt kick",badge:"Pakota liikkeelle",color:"b-amber",theory:"",steps:[{t:"N",text:"Tee tai kuole — kuvittele elämäsi 10v päästä muuttumattomana."},{t:"N",text:"Kova deadline — kirjoita: Elokuuhun mennessä tienaan lisää tai olen out."},{t:"N",text:"Ten turns — tee 10 minuuttia nyt."}],ex:null},
+      {id:"detox",name:"Momentality detox",badge:"Muda, Mura, Muri",color:"b-amber",theory:"Identifioi jätettä, epäjohdonmukaisuutta ja ylikuormitusta.",steps:[{t:"N",text:"Audit your day — minne aika oikeasti menee?"},{t:"N",text:"Muda — turhat rutiinit."},{t:"N",text:"Mura — onko pysyvää rutiinia?"},{t:"N",text:"Muri — ylikuormittunut koska sanot kyllä kaikelle?"},{t:"N",text:"Eliminoi tai re-engineeroi."}],ex:null},
+      {id:"idvan",name:"Identiteettivankila",badge:"Poistu etiketistä",color:"b-coral",theory:"Identiteettivankila = itseasetettuja etikettejä: Olen introvertti, joten en voi x.",steps:[{t:"N",text:"Kohtaa seinä — tiedosta ääni. Sivuuta se."},{t:"N",text:"Astu ulkopuolelle — Olen mitä minun tarvitsee olla."}],ex:null},
+      {id:"monkey",name:"Monkey first — vaikein ensin",badge:"Älä rakenna pallia ensin",color:"b-amber",theory:"Mikä on pelottavin mutta tärkein asia — tee se ensin.",steps:[],ex:{label:"Esimerkki",text:"Proteiinivanukas: testaillaan makuja — hyvä! Sitten: säilyvyysaika liian lyhyt. Monkey = säilyvyysaika. Olisi pitänyt ratkaista ensin."}}
+    ],
+    due:[
+      {id:"canary",name:"Canary questions",badge:"Paljastavat kysymykset",color:"b-blue",theory:"Kysy: Mitä en voi kysyä suoraan mutta tarvitsen tietää?",steps:[{t:"N",text:"Turnover — Kuinka kauan keskiverto henkilö pysyy täällä?"},{t:"N",text:"Luonne — Mitä viime parisi sanoisi vaikeimmaksi asiaksi kanssasi?"},{t:"N",text:"Epäonnistuminen — Mikä epäonnistuminen opetti jotain?"},{t:"N",text:"Kulttuuri — Mikä on yleisin valitus henkilökunnalta?"}],ex:null},
+      {id:"rums",name:"Rumsfeld matrix",badge:"Tiedon kartoitus",color:"b-blue",theory:"Kartoita mitä tiedät ja mitä et tiedä.",steps:[{t:"N",text:"Known knowns — tiedät varmasti."},{t:"N",text:"Known unknowns — tiedät, että et tiedä."},{t:"N",text:"Unknown knowns — olet unohtanut."},{t:"N",text:"Unknown unknowns — et tiedä ettei sinulla ole."}],ex:null},
+      {id:"drones",name:"Data drones",badge:"Hae tietoa aktiivisesti",color:"b-teal",theory:"",steps:[{t:"N",text:"Internet drone — tutki netistä ennen sitoutumista."},{t:"N",text:"Biometric data — mitkä asiat vaikuttavat terveyteesi?"},{t:"N",text:"S2 drone — trackata kaikki: syöminen, treenit, stressi."}],ex:null},
+      {id:"firstp",name:"First principle thinking",badge:"Murra oletukset",color:"b-teal",theory:"Murra päätös sen perusteellisimpaan totuuteen.",steps:[{t:"N",text:"Ongelma ja oletukset — erota faktat mielipiteistä."},{t:"N",text:"Elementaaliset totuudet — mikä oikeasti ratkaisee?"},{t:"N",text:"Rakenna maasta — puhtaalta pöydältä."}],ex:{label:"Esimerkki",text:"Ei saa treffejä koska ei ole varaa hyviin vaatteisiin. Totuus: energia ja itsevarmuus viehättävät — ei vaatteet."}}
+    ],
+    ongelma:[
+      {id:"scire",name:"SCIRE framework",badge:"Ongelman rakenne",color:"b-blue",theory:"",steps:[{t:"L",l:"S",text:"Situation — mikä on ongelma?"},{t:"L",l:"C",text:"Causes — mikä aiheuttaa epäonnistumisen?"},{t:"L",l:"I",text:"Impediments — mitkä esteet?"},{t:"L",l:"R",text:"Rules & response — taktiikat?"},{t:"L",l:"E",text:"Execute — pelaa järkevästi."}],ex:null},
+      {id:"subcons",name:"Subconscious problem solving",badge:"Anna alitajunnan töihin",color:"b-purple",theory:"Alitajunta ratkaisee ongelmia nukkuessa — anna sille oikeat parametrit.",steps:[{t:"N",text:"Kirjoita ongelma positiivisessa muodossa."},{t:"N",text:"Täytä mieli aiheeseen liittyvällä infolla."},{t:"N",text:"Laske nukahtaessa 100:sta alaspäin."},{t:"N",text:"Kirjoita heti herätessä kaikki ideat."}],ex:null},
+      {id:"future",name:"Futurecasting",badge:"Näe tulevaisuus ensin",color:"b-purple",theory:"",steps:[{t:"N",text:"Toistuvuus — Jos toistan tämän monta kertaa, miltä tulevaisuus näyttää?"},{t:"N",text:"Sivulliset — mitä muita lopputuloksia syntyy?"},{t:"N",text:"Päätösluokka — power vai treason?"}],ex:null},
+      {id:"meta",name:"Metaphorical lensing",badge:"Uusi näkökulma",color:"b-teal",theory:"Uudelleenkehystä todellisuutesi vertauskuvilla.",steps:[],ex:{label:"Esimerkkejä",text:"Raha = vapaussotilaat. Keho = temppeli. Epäonnistuminen = XP-pisteitä."}}
+    ],
+    menneisyys:[
+      {id:"radar",name:"RADAR — virheen purku",badge:"Menneisyys dataksi",color:"b-purple",theory:"",steps:[{t:"L",l:"R",text:"Reveal — kaiva ylös muisto joka haittaa."},{t:"L",l:"A",text:"Audit — käy läpi huomaamattomat oletukset."},{t:"L",l:"D",text:"Disprove — itsekritiikkisi on tunteellinen mielipide."},{t:"L",l:"A",text:"Adjust — mitä teet ensi kerralla eri tavalla?"},{t:"L",l:"R",text:"Repeat — käytä RADAR aina kun palaat vanhoihin malleihin."}],ex:null},
+      {id:"hansei",name:"Hansei — sokeapisteet",badge:"Mitä jäi huomaamatta?",color:"b-purple",theory:"Fokus sokeapisteissä, ei syyttelyssä.",steps:[{t:"N",text:"Rewind — valitse aika jolloin asiat menivät pieleen."},{t:"N",text:"Poista sormi — älä syytä muita."},{t:"N",text:"Assess & ask — mitkä asenteet johtivat tähän?"},{t:"N",text:"Adjust — mitä teet ensi kerralla paremmin?"}],ex:null},
+      {id:"bigugly",name:"Big ugly funeral",badge:"Symbolinen hautajaiset",color:"b-coral",theory:"Löydä big ugly — asia jota vedät mukanasi. Löydä fyysinen tavara. Hautaa se.",steps:[],ex:{label:"Esimerkki",text:"Epäonnistunut bisnes: kirjoita suunnitelma paperille, polta se. Suhde: löydä esine, tuhoa symbolisesti."}}
+    ],
+    tilanne:[
+      {id:"sitrep",name:"Sitrep — command score",badge:"Elämän tila numeroina",color:"b-blue",theory:"Morale score = miltä tuntuu. Command score = miten menee objektiivisesti.",steps:[{t:"N",text:"Terveys — 1–10 × 1.2"},{t:"N",text:"Vapaus — 1–10 × 1.1"},{t:"N",text:"Suhteet — × 1.0"},{t:"N",text:"Spirituaalisuus — × 0.9"},{t:"N",text:"Tarkoitus — × 0.8"}],ex:null},
+      {id:"vd",name:"V/D-indeksi",badge:"Voitatko vai häviätkö?",color:"b-blue",theory:"Paljastaa: voitatko vai häviätkö päivittäisen elämäsi?",steps:[{t:"N",text:"Raportti — kirjaa kaikki mitä teit ja jätit tekemättä."},{t:"N",text:"90 päivän analyysi — +1 / -1 / 0."},{t:"N",text:"Laske yhteen — positiivinen = voitat."}],ex:null},
+      {id:"lifeas",name:"Life as -strategia",badge:"Vaihda frame",color:"b-purple",theory:"Ajattele elämääsi videopelinä, elokuvana tai yrityksenä.",steps:[{t:"N",text:"Videopeli — quests, levelit, XP."},{t:"N",text:"Elokuva — kukaan ei katso elokuvaa jossa päähahmo elää samaa päivää."},{t:"N",text:"CEO-framework — Operations, Finance, HR, Product, Legal, IT."}],ex:null}
+    ],
+    mieli:[
+      {id:"grat",name:"Gratitude funk buster",badge:"Laske siunasi",color:"b-teal",theory:"Kerran viikossa: 5 asiaa jota arvostat. Suurin osa valittamisistasi on luksusongelmia.",steps:[],ex:{label:"Tänä viikkona arvostan",text:"1. ___ 2. ___ 3. ___ 4. ___ 5. ___"}},
+      {id:"optim",name:"Optimismisuus — arvostuksen muoto",badge:"Valitse optimismi",color:"b-teal",theory:"Optimismi on strateginen valinta. Se parantaa suoritusta suoraan.",steps:[],ex:{label:"Käytännössä",text:"Ennen projektia: Tämä tulee onnistumaan. Vaikean päivän jälkeen: Mitä tänään opin?"}},
+      {id:"mlens",name:"Metaphorical lensing",badge:"Uusi frame",color:"b-teal",theory:"Sama tilanne, eri frame, eri tunne, eri toiminta.",steps:[],ex:{label:"Esimerkkejä",text:"Raha = vapaussotilaat. Keho = temppeli. Vaikeus = pääsymaksu parempaan elämään."}},
+      {id:"lifegame",name:"Life as videopeli",badge:"Elämä pelinä",color:"b-purple",theory:"Jokainen vaikeus on boss battle. Jokainen epäonnistuminen on XP.",steps:[],ex:{label:"Tänään",text:"Nousin kellon mennessä: Discipline +1. Menin salille: Strength +1. Vaikea keskustelu: Wisdom +2."}},
+      {id:"lifemovie",name:"Life as elokuva",badge:"Elämä elokuvana",color:"b-purple",theory:"Kukaan ei katso elokuvaa jossa päähahmo elää samaa päivää. Sinä olet päähahmosi.",steps:[{t:"N",text:"Kysy: Teenkö päätöksen, jota elokuva vaatii?"},{t:"N",text:"Kirjoita kohtaus: mitä hahmosi tekisi seuraavaksi?"},{t:"N",text:"Vastoinkäymiset ovat juonta — ilman niitä elokuva on tylsä."}],ex:{label:"Esimerkki",text:"Harkinnut yritystä 2 vuotta. Katsoisi kukaan elokuvaa, jossa sankari miettii 3 vuotta lisää? Aika toimia."}},
+      {id:"lifeceo",name:"Life as CEO framework",badge:"Elämä yrityksenä",color:"b-purple",theory:"Olet oman elämäsi toimitusjohtaja. Mikä osasto on heikin?",steps:[{t:"N",text:"Operations — terveys, uni, ravinto."},{t:"N",text:"Finance — säästöt, tulot, kulut."},{t:"N",text:"HR — suhteet, parisuhde."},{t:"N",text:"Product — taidot, oppiminen."},{t:"N",text:"Legal — arvot, etiikka."},{t:"N",text:"IT — aika ja kalenteri."}],ex:{label:"Viikoittainen katselmus",text:"Finance: ok. Operations: treeni jäi 2x. HR: ei soittanut kaverille 2 viikkoon. Heikin = HR."}},
+      {id:"msuck",name:"Embrace the suck — mindset",badge:"Epämukavuus = kasvu",color:"b-amber",theory:"In the suck = In the growth. Vaihda frame.",steps:[{t:"N",text:"Tunnista — oletko epämukavuudessa?"},{t:"N",text:"Reframe — Tämä tarkoittaa, että laajennan rajojani."},{t:"N",text:"Omista se — istu siinä hetki tietoisesti."}],ex:{label:"Esimerkki",text:"Kylmä suihku talvella. Seisot siinä ja päätät olla poistumatta — mindset-voitto."}}
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let D, adminMode=false, curScreen='home', tapN=0, tapTimer=null, addCardTarget=null;
+
+function load(){try{const s=localStorage.getItem('mntl_v4');D=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT));}catch{D=JSON.parse(JSON.stringify(DEFAULT));}}
+function save(){localStorage.setItem('mntl_v4',JSON.stringify(D));}
+
+// ═══════════════════════════════════════════
+// LOCK
+// ═══════════════════════════════════════════
+function unlock(){
+  if(document.getElementById('pw').value==='354AaB'){
+    document.getElementById('lock').style.display='none';
+  } else {
+    document.getElementById('pw-err').textContent='Väärä salasana — yritä uudelleen';
+    document.getElementById('pw').value='';
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDER HOME
+// ═══════════════════════════════════════════
+function renderHome(){
+  const el=document.getElementById('home-sections');
+  el.innerHTML='';
+  D.sections.forEach((sec,si)=>{
+    const wrap=document.createElement('div');
+    const labelDiv=document.createElement('div');
+    labelDiv.className='sec-label';
+    labelDiv.innerHTML=`${sec.label} <button class="del-sec-btn" onclick="delSection(${si})"><i class="ti ti-trash"></i> Poista</button>`;
+    wrap.appendChild(labelDiv);
+    sec.items.forEach((item,ii)=>{
+      const btn=document.createElement('button');
+      btn.className='nav-btn';
+      btn.innerHTML=`<i class="ti ${item.icon} nav-icon"></i><div style="flex:1"><div class="nav-label">${item.label}</div><div class="nav-sub">${item.sub}</div></div><button class="del-nav-btn" onclick="delNavItem(event,${si},${ii})"><i class="ti ti-x"></i></button>`;
+      btn.addEventListener('click',()=>goScreen(item.id));
+      wrap.appendChild(btn);
+    });
+    el.appendChild(wrap);
+  });
+}
+
+// ═══════════════════════════════════════════
+// RENDER DETAIL
+// ═══════════════════════════════════════════
+function renderDetail(id){
+  const scr=D.screens[id]||{title:id,sub:''};
+  document.getElementById('detail-title').textContent=scr.title;
+  document.getElementById('detail-sub').textContent=scr.sub;
+  const el=document.getElementById('detail-cards');
+  el.innerHTML='';
+  (D.cards[id]||[]).forEach((card,ci)=>{
+    el.appendChild(buildCard(id,card,ci));
+  });
+  document.getElementById('add-card-btn-bottom').style.display=adminMode?'flex':'none';
+}
+
+function buildCard(screenId,card,ci){
+  const wrap=document.createElement('div');
+  wrap.className='card';
+
+  // Admin bar
+  const adminBar=document.createElement('div');
+  adminBar.className='card-admin-bar';
+  const delBtn=document.createElement('button');
+  delBtn.className='del-card-btn';
+  delBtn.innerHTML='<i class="ti ti-trash"></i> Poista kortti';
+  delBtn.addEventListener('click',()=>delCard(screenId,ci));
+  adminBar.appendChild(delBtn);
+  wrap.appendChild(adminBar);
+
+  // Header
+  const header=document.createElement('div');
+  header.className='card-header';
+  const chevId='chev-'+card.id;
+  const bodyId='body-'+card.id;
+  header.innerHTML=`<div><div class="card-name">${card.name}</div><span class="badge ${card.color}">${card.badge}</span></div><i class="ti ti-chevron-down chevron" id="${chevId}"></i>`;
+  header.addEventListener('click',()=>toggleCard(bodyId,chevId));
+  wrap.appendChild(header);
+
+  // Body
+  const body=document.createElement('div');
+  body.className='card-body';
+  body.id=bodyId;
+  let html='';
+  if(card.theory) html+=`<p class="theory">${card.theory}</p>`;
+  let n=0;
+  (card.steps||[]).forEach(s=>{
+    if(s.t==='L'){html+=`<div class="step"><div class="step-letter">${s.l}</div><div class="step-text">${s.text}</div></div>`;}
+    else{n++;html+=`<div class="step"><div class="step-num">${n}</div><div class="step-text">${s.text}</div></div>`;}
+  });
+  if(card.ex) html+=`<div class="ex-box"><div class="ex-label">${card.ex.label}</div><div class="ex-text">${card.ex.text}</div></div>`;
+  body.innerHTML=html;
+  wrap.appendChild(body);
+  return wrap;
+}
+
+function toggleCard(bodyId,chevId){
+  const b=document.getElementById(bodyId);
+  const c=document.getElementById(chevId);
+  const open=b.classList.contains('open');
+  b.classList.toggle('open',!open);
+  if(c) c.style.transform=open?'':'rotate(180deg)';
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function goScreen(id){
+  curScreen=id;
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('detail').classList.add('active');
+  renderDetail(id);
+  window.scrollTo(0,0);
+}
+
+function goHome(){
+  curScreen='home';
+  document.getElementById('detail').classList.remove('active');
+  document.getElementById('home').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════════
+document.getElementById('home-title').addEventListener('click',()=>{
+  tapN++;
+  clearTimeout(tapTimer);
+  tapTimer=setTimeout(()=>tapN=0,600);
+  if(tapN>=3){tapN=0;toggleAdmin();}
+});
+
+function toggleAdmin(){
+  adminMode=!adminMode;
+  document.body.classList.toggle('admin-mode',adminMode);
+  document.getElementById('admin-bar').classList.toggle('visible',adminMode);
+  document.getElementById('admin-badge-el').style.display=adminMode?'inline':'none';
+  if(curScreen!=='home') renderDetail(curScreen);
+  document.getElementById('add-card-btn-bottom').style.display=(adminMode&&curScreen!=='home')?'flex':'none';
+}
+
+// ═══════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════
+function delCard(screenId,ci){
+  if(!confirm('Poistetaanko tämä kortti?')) return;
+  D.cards[screenId].splice(ci,1);
+  save();
+  renderDetail(screenId);
+}
+
+function delSection(si){
+  if(!confirm('Poistetaanko tämä osio?')) return;
+  D.sections.splice(si,1);
+  save();
+  renderHome();
+}
+
+function delNavItem(e,si,ii){
+  e.stopPropagation();
+  if(!confirm('Poistetaanko tämä nappula?')) return;
+  D.sections[si].items.splice(ii,1);
+  if(D.sections[si].items.length===0) D.sections.splice(si,1);
+  save();
+  renderHome();
+}
+
+// ═══════════════════════════════════════════
+// ADD CARD
+// ═══════════════════════════════════════════
+function openAddCard(){
+  if(curScreen==='home'){alert('Siirry ensin johonkin osioon.');return;}
+  addCardTarget=curScreen;
+  document.getElementById('m-name').value='';
+  document.getElementById('m-badge').value='';
+  document.getElementById('m-theory').value='';
+  document.getElementById('m-example').value='';
+  document.getElementById('add-card-modal').classList.add('open');
+}
+
+function confirmAddCard(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name) return;
+  const card={
+    id:'c'+Date.now(),
+    name,
+    badge:document.getElementById('m-badge').value.trim(),
+    color:document.getElementById('m-color').value,
+    theory:document.getElementById('m-theory').value.trim(),
+    steps:[],
+    ex:document.getElementById('m-example').value.trim()?{label:'Esimerkki',text:document.getElementById('m-example').value.trim()}:null
+  };
+  if(!D.cards[addCardTarget]) D.cards[addCardTarget]=[];
+  D.cards[addCardTarget].push(card);
+  save();
+  renderDetail(addCardTarget);
+  closeModal('add-card-modal');
+}
+
+// ═══════════════════════════════════════════
+// ADD CATEGORY
+// ═══════════════════════════════════════════
+function openAddCat(){
+  ['cm-sec','cm-label','cm-sub','cm-title','cm-sub2'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('add-cat-modal').classList.add('open');
+}
+
+function confirmAddCat(){
+  const label=document.getElementById('cm-label').value.trim();
+  if(!label) return;
+  const id='scr'+Date.now();
+  D.sections.push({id:'s'+Date.now(),label:document.getElementById('cm-sec').value.trim()||'Uusi kategoria',items:[{id,icon:'ti-star',label,sub:document.getElementById('cm-sub').value.trim()}]});
+  D.screens[id]={title:document.getElementById('cm-title').value.trim()||label,sub:document.getElementById('cm-sub2').value.trim()};
+  D.cards[id]=[];
+  save();
+  renderHome();
+  closeModal('add-cat-modal');
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+load();
+renderHome();
+</script>
+</body>
+</html>
